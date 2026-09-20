@@ -1,7 +1,9 @@
 {
   "expo": {
-    "name": "fatura-scanner",
+    "name": "Home Inventory",
     "slug": "fatura-scanner",
+    "scheme": "faturascanner",
+    "owner": "lendatchugo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,15 +12,29 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.guilherme.faturascanner",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#f7ead6",
+        "foregroundImage": "./assets/icon-adaptive-foreground.png"
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3e6b36f2-3f84-47d1-8632-cf20be612611"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar"
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3e6b36f2-3f84-47d1-8632-cf20be612611"
     }
   }
 }
