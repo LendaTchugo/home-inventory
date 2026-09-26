@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Alert, TouchableOpacity } from 'react-native';
 import { lerRefeicoes, criarRefeicao, atualizarRefeicao, eliminarRefeicao, lerInventario } from '../lib/dados';
+import { filtrarOrdenarInventario } from '../lib/categorias';
 import { cores } from '../lib/tema';
 import CampoTexto from './CampoTexto';
 import BotaoPilula from './BotaoPilula';
+import BarraFiltroOrdenacao from './BarraFiltroOrdenacao';
 
 export default function GestorRefeicoes() {
   const [refeicoes, setRefeicoes] = useState([]);
@@ -13,6 +15,9 @@ export default function GestorRefeicoes() {
   const [nome, setNome] = useState('');
   const [itens, setItens] = useState([]);
   const [aGuardar, setAGuardar] = useState(false);
+  const [filtro, setFiltro] = useState('');
+  const [ordenacao, setOrdenacao] = useState('nome-asc');
+  const [unidadesFiltro, setUnidadesFiltro] = useState([]);
 
   useEffect(() => {
     let ativo = true;
@@ -131,8 +136,11 @@ export default function GestorRefeicoes() {
   }
 
   if (emEdicao !== null) {
-    const categoriasDisponiveis = inventario.filter(
-      (invItem) => !itens.some((item) => item.categoriaId === invItem.id)
+    const categoriasDisponiveis = filtrarOrdenarInventario(
+      inventario.filter((invItem) => !itens.some((item) => item.categoriaId === invItem.id)),
+      filtro,
+      ordenacao,
+      unidadesFiltro
     );
 
     return (
@@ -163,6 +171,14 @@ export default function GestorRefeicoes() {
         )}
 
         <Text style={styles.subtitulo}>Adicionar item do inventário:</Text>
+        <BarraFiltroOrdenacao
+          filtro={filtro}
+          aoMudarFiltro={setFiltro}
+          ordenacao={ordenacao}
+          aoMudarOrdenacao={setOrdenacao}
+          unidadesSelecionadas={unidadesFiltro}
+          aoMudarUnidadesSelecionadas={setUnidadesFiltro}
+        />
         <View style={styles.linhaChips}>
           {categoriasDisponiveis.length === 0 ? (
             <Text style={styles.vazio}>Todos os itens do inventário já estão nesta refeição.</Text>

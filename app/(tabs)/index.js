@@ -13,11 +13,13 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { guardarCompra, lerInventario, criarItemInventario, ajustarQuantidadeInventario } from '../../lib/dados';
-import { sugerirCategoria } from '../../lib/categorias';
+import { sugerirCategoria, filtrarOrdenarInventario } from '../../lib/categorias';
 import { cores } from '../../lib/tema';
 import CampoTexto from '../../components/CampoTexto';
 import SeletorUnidade from '../../components/SeletorUnidade';
 import BotaoPilula from '../../components/BotaoPilula';
+import BotaoAcaoCircular from '../../components/BotaoAcaoCircular';
+import BarraFiltroOrdenacao from '../../components/BarraFiltroOrdenacao';
 
 const PROMPT = `Analisa esta fatura de supermercado e extrai todos os artigos comprados.
 As faturas de supermercado são impressas em papel térmico e podem estar desbotadas, amarrotadas ou com pouco contraste — faz o melhor esforço para ler texto pouco nítido, usando o contexto (preços e nomes de artigos típicos de supermercado) para desambiguar quando necessário.
@@ -34,7 +36,11 @@ function extrairJSON(texto) {
 }
 
 function ItemParaConfirmar({ item, inventario, onAtualizar }) {
+  const [filtro, setFiltro] = useState('');
+  const [ordenacao, setOrdenacao] = useState('nome-asc');
+  const [unidadesFiltro, setUnidadesFiltro] = useState([]);
   const modo = item.categoriaId ?? (item.novaCategoria ? NOVA_CATEGORIA : SEM_CATEGORIA);
+  const inventarioExibido = filtrarOrdenarInventario(inventario, filtro, ordenacao, unidadesFiltro);
 
   function alterarMultiplicador(texto) {
     const multiplicador = Number(texto) || 1;
@@ -50,8 +56,19 @@ function ItemParaConfirmar({ item, inventario, onAtualizar }) {
         {item.quantidade}x {item.item} — {item.preco != null ? `${item.preco}€` : '?'}
       </Text>
 
+      {inventario.length > 0 && (
+        <BarraFiltroOrdenacao
+          filtro={filtro}
+          aoMudarFiltro={setFiltro}
+          ordenacao={ordenacao}
+          aoMudarOrdenacao={setOrdenacao}
+          unidadesSelecionadas={unidadesFiltro}
+          aoMudarUnidadesSelecionadas={setUnidadesFiltro}
+        />
+      )}
+
       <View style={styles.linhaChips}>
-        {inventario.map((invItem) => (
+        {inventarioExibido.map((invItem) => (
           <TouchableOpacity
             key={invItem.id}
             style={[styles.chip, modo === invItem.id && styles.chipSelecionado]}
@@ -376,9 +393,13 @@ export default function Scan() {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {!fotoUri && !mostrarManual && !itensParaConfirmar && (
-          <View style={styles.linhaBotoes}>
-            <BotaoPilula texto="Tirar foto da fatura" cor={cores.verde} onPress={tirarFoto} />
-            <BotaoPilula texto="Adicionar manualmente" cor={cores.painel} onPress={() => setMostrarManual(true)} />
+          <View style={styles.linhaAcoes}>
+            <BotaoAcaoCircular icone={require('../../assets/camera.png')} rotulo="Scan faturas" onPress={tirarFoto} />
+            <BotaoAcaoCircular
+              icone={require('../../assets/form.png')}
+              rotulo="Inserir manualmente"
+              onPress={() => setMostrarManual(true)}
+            />
           </View>
         )}
 
@@ -475,6 +496,11 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  linhaAcoes: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
   },
   preview: {
     width: 300,

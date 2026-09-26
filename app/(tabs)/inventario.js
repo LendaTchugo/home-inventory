@@ -17,11 +17,13 @@ import {
   eliminarItemInventario,
   ajustarQuantidadeInventario,
 } from '../../lib/dados';
+import { filtrarOrdenarInventario } from '../../lib/categorias';
 import { cores } from '../../lib/tema';
 import CampoTexto from '../../components/CampoTexto';
 import SeletorUnidade from '../../components/SeletorUnidade';
 import BotaoAcaoCircular from '../../components/BotaoAcaoCircular';
 import BotaoPilula from '../../components/BotaoPilula';
+import BarraFiltroOrdenacao from '../../components/BarraFiltroOrdenacao';
 import GestorRefeicoes from '../../components/GestorRefeicoes';
 import UsarRefeicao from '../../components/UsarRefeicao';
 
@@ -46,6 +48,9 @@ export default function Inventario() {
   const [valorUso, setValorUso] = useState('');
   const [mostrarGestorRefeicoes, setMostrarGestorRefeicoes] = useState(false);
   const [mostrarUsarRefeicao, setMostrarUsarRefeicao] = useState(false);
+  const [filtro, setFiltro] = useState('');
+  const [ordenacao, setOrdenacao] = useState('nome-asc');
+  const [unidadesFiltro, setUnidadesFiltro] = useState([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -204,6 +209,7 @@ export default function Inventario() {
 
   const nadaEmDestaque =
     !mostrarGestorRefeicoes && !mostrarUsarRefeicao && !mostrarFormAdicionar;
+  const itensExibidos = filtrarOrdenarInventario(itens, filtro, ordenacao, unidadesFiltro);
 
   return (
     <KeyboardAvoidingView
@@ -296,15 +302,28 @@ export default function Inventario() {
           </View>
         )}
 
+        {nadaEmDestaque && itens.length > 0 && (
+          <BarraFiltroOrdenacao
+            filtro={filtro}
+            aoMudarFiltro={setFiltro}
+            ordenacao={ordenacao}
+            aoMudarOrdenacao={setOrdenacao}
+            unidadesSelecionadas={unidadesFiltro}
+            aoMudarUnidadesSelecionadas={setUnidadesFiltro}
+          />
+        )}
+
         {nadaEmDestaque && (
           <View style={estilos.painelLista}>
             {itens.length === 0 ? (
               <Text style={estilos.vazio}>Ainda não há itens no inventário.</Text>
+            ) : itensExibidos.length === 0 ? (
+              <Text style={estilos.vazio}>Nenhum item corresponde ao filtro.</Text>
             ) : (
-              itens.map((item, indice) => (
+              itensExibidos.map((item, indice) => (
                 <View
                   key={item.id}
-                  style={[estilos.item, indice === itens.length - 1 && estilos.itemSemBorda]}
+                  style={[estilos.item, indice === itensExibidos.length - 1 && estilos.itemSemBorda]}
                 >
                   {idEmEdicao === item.id ? (
                     <>
